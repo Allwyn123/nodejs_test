@@ -1,31 +1,35 @@
+
 const readline = require("readline").createInterface({ input: process.stdin, output: process.stdout});
+const validation = require("./validation");
 
 /* ------- object create start ------- */
 let emp_data = {emp: [
     {
-    emp_id: 1,
-    emp_name: "Alex",
-    emp_phone: 9876542130,
-    emp_email: "abc@email.com"},
+        emp_id: 1,
+        emp_name: "Alex Smith",
+        emp_phone: 9876542130,
+        emp_email: "abc@email.com"
+    },
     {
-    emp_id: 2,
-    emp_name: "Mic",
-    emp_phone: 9876542130,
-    emp_email: "abc@email.com"},
+        emp_id: 2,
+        emp_name: "Mic Eric",
+        emp_phone: 9063587412,
+        emp_email: "abc@email.com"
+    },
     {
-    emp_id: 3,
-    emp_name: "John",
-    emp_phone: 9876542130,
-    emp_email: "abc@email.com"}
+        emp_id: 3,
+        emp_name: "John Stone",
+        emp_phone: 7854962135,
+        emp_email: "abc@email.com"
+    }
 ]};
-// console.log();
-
 /* ------- object create end ------- */
 
-
+/*------- main function start ------- */
 function main_func() {
     console.log("\nSelect options: \n1: Add New Employee \n2: Update Employee Detail \n3: Delete Employee");
     console.log("4: Display Employee Table\n5: Exit\n");
+    
     readline.question("Enter the number to select options\n",(value)=>{
         if(value == 1) new_emp();
         else if(value == 2) update_emp();
@@ -39,6 +43,7 @@ function main_func() {
     });
 }
 main_func();
+/*------- main function end ------- */
 
 /*------- create new employee start ------- */
 function new_emp() {
@@ -46,34 +51,66 @@ function new_emp() {
     let add_obj = {emp_id: new_id};
 
     readline.question("\nEnter Employee First Name\n", (name) => {
+        let name_check = validation.name_valid(name);
         name = name.toLowerCase();
         let first_name = cap_func(name);
         let last_name;
 
-        readline.question("\nEnter Employee Last Name\n", (Lname) => {
-            Lname = Lname.toLowerCase();
-            last_name = cap_func(Lname);
+        if(name_check) {
+            last_name_func();
+        } else {
+            console.log("Enter Valid First Name, Special Character and Number are not valid");
+            new_emp();
+        }
 
-            add_obj.emp_name = `${first_name} ${last_name}`;
-            phone_func();
-        });
+        function last_name_func() {
+            readline.question("\nEnter Employee Last Name\n", (Lname) => {
+                let Lname_check = validation.name_valid(Lname);
+
+                if(Lname_check) {
+                    Lname = Lname.toLowerCase();
+                    last_name = cap_func(Lname);
+        
+                    add_obj.emp_name = `${first_name} ${last_name}`;
+                    phone_func();
+                } else {
+                    console.log("Enter Valid Last Name, Special Character and Number are not valid");
+                    last_name_func();
+                }
+            });
+        }
+
     });
     
     function phone_func() {
         readline.question("\nEnter Employee phone no.\n", (phone) => {
-            // emp_phone = phone;
-            add_obj.emp_phone = parseInt(phone);
-            email_func();
+            phone = parseInt(phone);
+            let phone_check = validation.phone_valid(phone);
+
+            if(phone_check) {
+                add_obj.emp_phone = phone;
+                email_func();
+            } else {
+                console.log("Enter Valid Phone no., 10 Digit only");
+                phone_func();
+            }
         });
     }
     
     function email_func() {
         readline.question("\nEnter Employee Email address\n", (email) => {
-            // emp_email = email;
-            add_obj.emp_email = email;
-            addToObj(add_obj);
-            console.log("New Employee Data Successfully Added");
-            nav_func();
+            let email_check = validation.email_valid(email);
+
+            if(email_check) {
+                add_obj.emp_email = email;
+                addToObj(add_obj);
+                console.log("New Employee Data Successfully Added");
+                nav_func();
+            }
+            else {
+                console.log("Enter Valid Email ID");
+                email_func();
+            }
         });
     }
 
@@ -107,39 +144,80 @@ function update_emp() {
     });
 
     function  name_update(id) {
-        readline.question("\nEnter Name:\n", new_name => {
-            emp_data.emp.forEach((eve) => {
-                if(eve.emp_id == id) {
-                    eve.emp_name = new_name;
-                    console.log("Employee Name Successfully Updated");
-                    nav_func();
-                }
-            });
+        readline.question("\nEnter First Name:\n", new_name => {
+            let name_check = validation.name_valid(new_name);
+            new_name = new_name.toLowerCase();
+            let first_name = cap_func(new_name);
+            let last_name;
+
+            if(name_check) {
+                last_name_update(id);
+            } else {
+                console.log("Enter Valid First Name, Special Character and Number are not valid");
+                name_update(id);
+            }
+
+            function last_name_update(id) {
+                readline.question("\nEnter Employee Last Name\n", (new_Lname) => {
+                    let Lname_check = validation.name_valid(new_Lname);
+    
+                    if(Lname_check) {
+                        new_Lname = new_Lname.toLowerCase();
+                        last_name = cap_func(new_Lname);
+            
+                        emp_data.emp.forEach((eve) => {
+                            if(eve.emp_id == id) {
+                                eve.emp_name = `${first_name} ${last_name}`;
+                                console.log("Employee Name Successfully Updated");
+                                nav_func();
+                            }
+                        });
+    
+                    } else {
+                        console.log("Enter Valid Last Name, Special Character and Number are not valid");
+                        last_name_update(id);
+                    }
+                });
+            }
         });
     }
     
     function  phone_update(id) {
         readline.question("\nEnter new Phone no.:\n", new_phone => {
             new_phone = parseInt(new_phone);
-            emp_data.emp.forEach((eve) => {
-                if(eve.emp_id == id) {
-                    eve.emp_phone = new_phone;
-                    console.log("Employee Phone no. Successfully Updated");
-                    nav_func();
-                }
-            });
+            let phone_check = validation.phone_valid(phone);
+
+            if(phone_check) {
+                emp_data.emp.forEach((eve) => {
+                    if(eve.emp_id == id) {
+                        eve.emp_phone = new_phone;
+                        console.log("Employee Phone no. Successfully Updated");
+                        nav_func();
+                    }
+                });
+            } else {
+                console.log("Enter Valid Phone no., 10 Digit only");
+                phone_update(id);
+            }
         });
     }
     
     function  email_update(id) {
         readline.question("\nEnter new Email:\n", new_email => {
-            emp_data.emp.forEach((eve) => {
-                if(eve.emp_id == id) {
-                    eve.emp_email = new_email;
-                    console.log("Employee Email Successfully Updated");
-                    nav_func();
-                }
-            });
+            let email_check = validation.email_valid(new_email);
+
+            if(email_check) {
+                emp_data.emp.forEach((eve) => {
+                    if(eve.emp_id == id) {
+                        eve.emp_email = new_email;
+                        console.log("Employee Email Successfully Updated");
+                        nav_func();
+                    }
+                });
+            } else {
+                console.log("Enter Valid Email ID");
+                email_update(id);
+            }
         });
     }
 }
@@ -160,7 +238,7 @@ function delete_emp() {
         });
 
         if(id_avaiable) {
-            delete emp_data.emp[e_id];
+            delete emp_data.emp[index];
             console.log("\nEmployee Data Successfully Deleted");
             nav_func();
         }
@@ -190,7 +268,7 @@ let display_emp = () => {
 /*------- display table end ------- */
 
 /*------- disp_exit start ------- */
-let exit_func = () => readline.close();
+let exit_func = () => process.exit();
 /*------- disp_exit end ------- */
 
 function cap_func(name){
